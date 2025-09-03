@@ -2,6 +2,7 @@ from data.database import save_order, get_all_orders
 from products import create_product_download
 from apscheduler.schedulers.background import BackgroundScheduler
 import requests
+from data.order import QUEUED
 
 def initialise_scheduled_jobs(app):
     scheduler = BackgroundScheduler()
@@ -28,18 +29,25 @@ def process_orders(app):
             "date": order.date_placed_local.isoformat(),
         }
 
-        response = requests.post(
-            app.config["FINANCE_PACKAGE_URL"] + "/ProcessPayment",
-            json=payload
-        )
-        app.logger.info("Response from endpoint: " + response.text)
-        response.raise_for_status()
+        try:
+            response = requests.post(
+                app.config["FINANCE_PACKAGE_URL"] + "/ProcessPayment",
+                json=payload
+            )
+            app.logger.info("Response from endpoint: " + response.text)
+            response.raise_for_status()
 
-        order.set_as_processed()
-        save_order(order)
+            order.set_as_processed()
+            save_order(order)
+        except Exception as ex:
+            try:
+                order.set_as_failed()
+                save_order(order)
+            finally:
+                app.logger.exception("Failed to process order %s: %s", order.id, ex)
 
 def get_queue_of_orders_to_process():
     allOrders = get_all_orders()
-    queuedOrders = filter(lambda order: order.date_processed == None, allOrders)
+    queuedOrders = filter(lambda order: order.status == QUEUED, allOrders)
     sortedQueue = sorted(queuedOrders, key= lambda order: order.date_placed)
     return list(sortedQueue)
