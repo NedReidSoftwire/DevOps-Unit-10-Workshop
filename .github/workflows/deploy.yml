@@ -7,8 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
         # SET THESE
-        ACR_ADMIN_USERNAME: "<FILL ME IN>"
-        ACR_LOGIN_SERVER_URL: "<FILL ME IN>"
+        ACR_ADMIN_USERNAME: "nedcr"
+        ACR_LOGIN_SERVER_URL: "nedcr.azurecr.io"
         # SET THESE IN GITHUB
         ACR_ADMIN_PASSWORD: '${{ secrets.ACR_ADMIN_PASSWORD }}'
     # DECIDE WHETHER YOU WANT A BRANCH CHECK - if so remove the other "if"
