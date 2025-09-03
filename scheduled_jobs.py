@@ -5,6 +5,7 @@ import requests
 from data.order import QUEUED
 import time
 import random
+from typing import Optional
 
 def initialise_scheduled_jobs(app):
     scheduler = BackgroundScheduler()
@@ -71,7 +72,7 @@ def _is_transient_error(response_text: str) -> bool:
         or "timeout" in text
     )
 
-def _post_with_retries(app, url: str, json: dict, headers: dict | None, timeout_seconds: int,
+def _post_with_retries(app, url: str, json: dict, headers: Optional[dict], timeout_seconds: int,
                        max_attempts: int = 5, base_delay_seconds: float = 0.5):
     """
     POST with exponential backoff + jitter. Retries on network errors, 5xx, and known transient messages
